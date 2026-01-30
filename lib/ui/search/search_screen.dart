@@ -151,7 +151,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 );
               },
               loading: () => const SizedBox(),
-              error: (_, __) => const Center(child: Text('Error')),
+              error: (error, _) {
+                return const Center(child: Text('No internet connection.\nPlease check your network.', textAlign: TextAlign.center));
+              },
             ),
     );
   }

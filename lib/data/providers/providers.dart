@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_list/data/models/movie_list_model.dart';
+import 'package:movie_list/data/notifiers/movie_list_notifier.dart';
 import '../api/tmdb_client.dart';
 import '../repositories/movie_repository.dart';
 import '../db/app_database.dart';
@@ -35,3 +36,6 @@ final movieSearchResultsProvider = FutureProvider.autoDispose<List<MovieListMode
 
   return ref.read(movieRepositoryProvider).searchMovies(query);
 });
+
+final movieListProvider = StateNotifierProvider<MovieListNotifier, AsyncValue<List<MovieListModel>>>((ref) => MovieListNotifier(ref));
+

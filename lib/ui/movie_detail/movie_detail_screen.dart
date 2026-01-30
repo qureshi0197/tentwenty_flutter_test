@@ -7,18 +7,34 @@ import 'package:movie_list/ui/showtime/showtime_screen.dart';
 import 'package:movie_list/ui/trailer/trailer_player_screen.dart';
 import 'package:movie_list/theme/app_colors.dart';
 
-class MovieDetailScreen extends ConsumerWidget {
+class MovieDetailScreen extends ConsumerStatefulWidget {
+  const MovieDetailScreen({super.key, required this.movieId});
   final int movieId;
 
-  const MovieDetailScreen({super.key, required this.movieId});
+  @override
+  ConsumerState<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
+
+class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
+  late final Future<MovieDetailModel> _movieFuture;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _movieFuture = ref.read(movieRepositoryProvider).getMovieDetail(widget.movieId);
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
     final repository = ref.read(movieRepositoryProvider);
 
-    return FutureBuilder<MovieDetailModel>(
-      future: repository.getMovieDetail(movieId),
+    return FutureBuilder(
+      future: _movieFuture,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Scaffold(body: Center(child: Text('Unable to load movie details')));
+        }
         if (!snapshot.hasData) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
@@ -117,7 +133,7 @@ class MovieDetailScreen extends ConsumerWidget {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               onPressed: () async {
-                                final videos = await repository.getMovieTrailers(movieId);
+                                final videos = await repository.getMovieTrailers(widget.movieId);
                                 if (videos.isNotEmpty) {
                                   Navigator.push(
                                     context,

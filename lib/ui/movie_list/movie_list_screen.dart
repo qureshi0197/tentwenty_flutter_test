@@ -17,7 +17,7 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
   int _page = 1;
   @override
   Widget build(BuildContext context) {
-    final moviesAsync = ref.watch(upcomingMoviesProvider(_page));
+    final moviesAsync = ref.watch(movieListProvider);
     return Scaffold(
       backgroundColor: AppColors.divider,
       appBar: AppBar(
@@ -25,17 +25,13 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
         title: const Text('Watch'),
         toolbarHeight: 80,
         backgroundColor: AppColors.background,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: widget.onSearchTap,
-
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.search), onPressed: widget.onSearchTap)],
       ),
       body: moviesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
+        error: (error, _) {
+          return const Center(child: Text('Unable to load movies.\nShowing offline data if available.', textAlign: TextAlign.center));
+        },
         data: (movies) {
           return ListView.builder(
             padding: const EdgeInsets.all(12),
@@ -47,9 +43,7 @@ class _MovieListScreenState extends ConsumerState<MovieListScreen> {
                   child: Center(
                     child: OutlinedButton(
                       onPressed: () {
-                        setState(() {
-                          _page++;
-                        });
+                        ref.read(movieListProvider.notifier).loadMore();
                       },
                       child: const Text('Load More'),
                     ),

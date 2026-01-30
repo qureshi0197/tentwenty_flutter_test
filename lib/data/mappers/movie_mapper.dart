@@ -23,22 +23,22 @@ extension MovieListModelMapper on MovieListModel {
 }
 
 extension MovieEntityMapper on MovieEntity {
-  MovieListModel toListModel() {
+  MovieListModel toModel() {
     return MovieListModel(
       id: id,
       title: title,
       originalTitle: originalTitle,
       originalLanguage: originalLanguage,
-      genreIds: genreIds.isNotEmpty ? genreIds.split(',').map(int.parse).toList() : [],
+      overview: overview,
+      posterPath: posterPath,
+      backdropPath: backdropPath,
+      releaseDate: releaseDate,
+      genreIds: genreIds.split(',').map(int.parse).toList(),
       adult: adult,
       video: video,
       popularity: popularity,
       voteAverage: voteAverage,
       voteCount: voteCount,
-      overview: overview,
-      posterPath: posterPath,
-      backdropPath: backdropPath,
-      releaseDate: releaseDate,
     );
   }
 }

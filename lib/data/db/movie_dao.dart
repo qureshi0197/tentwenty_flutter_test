@@ -11,4 +11,10 @@ abstract class MovieDao {
 
   @Query('DELETE FROM movies')
   Future<void> clearMovies();
+
+  @transaction
+  Future<void> replaceMovies(List<MovieEntity> movies) async {
+    await clearMovies();
+    await insertMovies(movies);
+  }
 }

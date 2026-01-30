@@ -8,6 +8,13 @@ class TMDBClient {
   late final Dio dio;
 
   TMDBClient() {
-    dio = Dio(BaseOptions(baseUrl: baseUrl, headers: {'Authorization': 'Bearer $bearerToken', 'Content-Type': 'application/json'}));
+    dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        headers: {'Authorization': 'Bearer $bearerToken', 'Content-Type': 'application/json'},
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
   }
 }

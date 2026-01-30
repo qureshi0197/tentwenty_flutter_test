@@ -12,36 +12,37 @@ class MovieRepository {
 
   MovieRepository(this.client, this.movieDao);
 
-  int _currentPage = 1;
-  bool _isFetching = false;
-
   Stream<List<MovieListModel>> watchUpcomingMovies({required int page}) async* {
-    if (_isFetching) return;
-    _isFetching = true;
-
-    _currentPage = page;
-
+    // Always emit cached data first
     final cached = await movieDao.getAllMovies();
     if (cached.isNotEmpty) {
-      yield cached.map((e) => e.toListModel()).toList();
+      yield cached.map((e) => e.toModel()).toList();
     }
 
-    final response = await client.dio.get('/discover/movie?page=$_currentPage');
-    final List results = response.data['results'];
+    try {
+      // Try network
+      final response = await client.dio.get('/discover/movie', queryParameters: {'page': page});
 
-    final movies = results.map((e) => MovieListModel.fromJson(e)).toList();
+      final List results = response.data['results'];
+      final movies = results.map((e) => MovieListModel.fromJson(e)).toList();
 
-    await movieDao.insertMovies(movies.map((e) => e.toEntity()).toList());
+      // Only replace cache AFTER success
+      await movieDao.replaceMovies(movies.map((e) => e.toEntity()).toList());
 
-    final updatedCache = await movieDao.getAllMovies();
-    yield updatedCache.map((e) => e.toListModel()).toList();
-
-    _isFetching = false;
+      yield movies;
+    } catch (_) {
+      // Network failed → do NOTHING
+      // Cached data already emitted
+    }
   }
 
   Future<MovieDetailModel> getMovieDetail(int movieId) async {
-    final response = await client.dio.get('/movie/$movieId');
-    return MovieDetailModel.fromJson(response.data);
+    try {
+      final response = await client.dio.get('/movie/$movieId');
+      return MovieDetailModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to load movie details');
+    }
   }
 
   Future<List<VideoModel>> getMovieTrailers(int movieId) async {
@@ -59,4 +60,10 @@ class MovieRepository {
     return results.map((e) => MovieListModel.fromJson(e)).toList();
   }
 
+  Future<List<MovieListModel>> getUpcomingMovies({required int page}) async {
+    final response = await client.dio.get('/discover/movie', queryParameters: {'page': page});
+
+    final List results = response.data['results'];
+    return results.map((e) => MovieListModel.fromJson(e)).toList();
+  }
 }
